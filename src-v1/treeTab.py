@@ -10,7 +10,12 @@ from PySide6.QtWidgets import (
 import os
 from abstractAdapter import AbstractAdapter as AA
 
-from PySide6.QtCore import QPersistentModelIndex
+from PySide6.QtCore import QModelIndex, QPersistentModelIndex
+
+class TreeItem(QTreeWidgetItem):
+    def __init__(self, arr, adapter: AA):
+        super().__init__(arr)
+        self.adapter = adapter
 
 class TreeTab(QWidget):
     def __init__(self, parent):
@@ -22,15 +27,22 @@ class TreeTab(QWidget):
         self.tree = QTreeWidget(self)
         self.tree.setColumnCount(2)
         self.tree.setHeaderLabels(['Name', 'Type'])
+        self.tree.itemClicked.connect(self.tree_item_clicked)
 
-        self.tabs = QTabWidget(self)
+        self.tab = QTabWidget(self)
+        self.tab.tabBar().hide()
+
+        self.tabs = set()
         
-        layout = QHBoxLayout()
-        self.setLayout(layout)
+        self.l = QHBoxLayout()
+        self.setLayout(self.l)
 
-        layout.addWidget(button)
-        layout.addWidget(self.tree)
-        layout.addWidget(self.tabs)
+        self.l.addWidget(button)
+        self.l.addWidget(self.tree)
+        self.l.addWidget(self.tab)
+    
+    def tree_item_clicked(self, item: TreeItem, _):
+        self.switch(item.adapter.get_widget())
 
     def open_file(self, file_path: str, parent: AA):
         print(f'requested {file_path} from {parent.get_basename()}')
@@ -43,21 +55,23 @@ class TreeTab(QWidget):
         if os.path.isfile(file_path):
             from fileSwitchOpener import fileSwitchOpen
             adapter = fileSwitchOpen(file_path, link_handle=self.open_file)
+            self.tabs.add(adapter.get_widget())
+            self.current_tab = adapter.get_widget()
             self.mount(adapter)
     
+    def switch(self, widget: QWidget):
+        index = self.tab.indexOf(widget)
+        self.tab.setCurrentIndex(index)
+
     def mount(self, adapter: AA):
         file_name, ext = adapter.get_basename().split('.')
         ext = ext.upper()
-        tree_item = QTreeWidgetItem([file_name, ext])
+        tree_item = TreeItem([file_name, ext], adapter)
         self.tree.invisibleRootItem().addChild(tree_item)
-        # tree_index = self.tree.indexFromItem(tree_item)
-        # p_tree_index = QPersistentModelIndex(tree_index)
-
-        self.tabs.addTab(adapter.get_widget(), 'test')
-        # tab_index = self.tabs.indexOf(adapter.get_widget())
-        # p_tab_index = QPersistentModelIndex(tab_index)
-
-        # return (p_tree_index, p_tab_index)
+        new_widget = adapter.get_widget()
+        self.tab.addTab(new_widget, "test")
+        self.tabs.add(new_widget)
+        self.switch(new_widget)
     
 if __name__ == "__main__":
     import widgetTester

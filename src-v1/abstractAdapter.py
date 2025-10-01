@@ -1,7 +1,10 @@
 from PySide6.QtWidgets import (
     QWidget,
-    QTabWidget,
     QFileDialog
+)
+
+from PySide6.QtCore import (
+    QPersistentModelIndex
 )
 
 from abc import ABC, abstractmethod
@@ -11,6 +14,8 @@ class AbstractAdapter(ABC):
     def __init__(self, file_path: str = None):
         self.file_path = file_path
         self.open(self.file_path)
+        self.tree_index = None
+        self.tab_index = None
     
     def get_basename(self):
         return os.path.basename(self.file_path)
@@ -30,6 +35,10 @@ class AbstractAdapter(ABC):
     @abstractmethod
     def get_filter(self) -> str:
         pass
+
+    def set_persistent_indices(self, tree_index: QPersistentModelIndex, tab_index: QPersistentModelIndex):
+        self.tree_index = tree_index
+        self.tab_index = tab_index
 
     def open(self, file_path: str):
         if os.path.isfile(file_path):
