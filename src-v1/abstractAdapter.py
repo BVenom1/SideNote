@@ -8,8 +8,7 @@ from abc import ABC, abstractmethod
 import os
 
 class AbstractAdapter(ABC):
-    def __init__(self, parent: QTabWidget, file_path: str = None):
-        self.p = parent
+    def __init__(self, file_path: str = None):
         self.file_path = file_path
         self.open(self.file_path)
     
@@ -47,7 +46,6 @@ class AbstractAdapter(ABC):
         file_path, _ = QFileDialog.getSaveFileName(self.get_widget(), "Save As", self.get_filter())
         if os.path.isfile(file_path):
             self.file_path = file_path
-            self.p.setTabText(self.p.currentIndex(), os.path.basename(file_path))
             self.naive_save()
     
     def save(self):

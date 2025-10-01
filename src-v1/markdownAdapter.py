@@ -10,30 +10,28 @@ from PySide6.QtCore import Qt, QUrl
 from abstractAdapter import AbstractAdapter as AA
 
 class MarkdownAdapter(AA):
-    def __init__(self, parent: QTabWidget, file_path: str = None):
+    def __init__(self, file_path=None, link_handle=None):
+        self.link_handle = link_handle
+
         self.view = QSplitter(Qt.Orientation.Horizontal)
 
-        self.text = QTextEdit(parent)
+        self.text = QTextEdit(self.view)
         self.view.addWidget(self.text)
         self.text.textChanged.connect(self.convert_to_markdown)
 
-        self.browser = QTextBrowser(parent)
+        self.browser = QTextBrowser(self.view)
         self.browser.setOpenLinks(False)
         self.browser.anchorClicked.connect(lambda link: self.handle_link(link))
         self.view.addWidget(self.browser)
         
-        super().__init__(parent, file_path)
-
+        super().__init__(file_path)
     
     def handle_link(self, link: QUrl):
         if link.scheme() == "":
             self.browser.scrollToAnchor(link.fragment())
         else:
             file_path = link.toString()
-            print(file_path)
-            from fileSwitchOpener import fileSwitchOpen
-            new_adapter = fileSwitchOpen(self.p, file_path)
-            self.p.addTab(new_adapter.get_widget(), new_adapter.get_basename())
+            if self.link_handle: self.link_handle(file_path, self)
     
     def convert_to_markdown(self):
         self.browser.setMarkdown(self.text.toPlainText())

@@ -6,9 +6,9 @@ from PySide6.QtWidgets import (
 )
 
 class TextAdapter(AA):
-    def __init__(self, parent: QTabWidget, file_path: str = None):
-        self.text_area = QTextEdit(parent=parent)
-        super().__init__(parent, file_path)
+    def __init__(self, file_path=None):
+        self.text_area = QTextEdit()
+        super().__init__(file_path)
     
     def get_value(self):
         return self.text_area.toPlainText()
