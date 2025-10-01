@@ -1,7 +1,5 @@
 from abstractAdapter import AbstractAdapter as AA
 
-import widgetTester
-
 from PySide6.QtWidgets import (
     QTabWidget,
     QTextEdit
@@ -25,6 +23,9 @@ class TextAdapter(AA):
         return "Text (*.txt)"
 
 if __name__ == "__main__":
+    
+    import widgetTester
+    
     def close_tab(tab: QTabWidget):
         tab.removeTab(tab.currentIndex())
 

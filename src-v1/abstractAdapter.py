@@ -12,6 +12,9 @@ class AbstractAdapter(ABC):
         self.p = parent
         self.file_path = file_path
         self.open(self.file_path)
+    
+    def get_basename(self):
+        return os.path.basename(self.file_path)
 
     @abstractmethod
     def get_value(self) -> str:
@@ -32,7 +35,6 @@ class AbstractAdapter(ABC):
     def open(self, file_path: str):
         if os.path.isfile(file_path):
             self.file_path = file_path
-            self.p.setTabText(self.p.currentIndex(), os.path.basename(file_path))
             with open(file_path, 'r') as file:
                 self.set_value(file.read())
 
