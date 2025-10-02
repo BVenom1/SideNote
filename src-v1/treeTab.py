@@ -6,23 +6,37 @@ from PySide6.QtWidgets import (
     QTabWidget,
     QTreeWidgetItem,
     QPushButton,
+    QMainWindow,
+    QToolBar,
+    QSplitter,
 )
 import os
 from abstractAdapter import AbstractAdapter as AA
+from fileSwitchOpener import file_switch_open
 
-from PySide6.QtCore import QModelIndex, QPersistentModelIndex
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QAction
+
+def get_arr(file_path: str):
+    file_name, ext = os.path.basename(file_path).split('.')
+    if file_name == '': file_name = 'untitled'
+    ext = ext.upper()
+    return [file_name, ext]
 
 class TreeItem(QTreeWidgetItem):
-    def __init__(self, arr, adapter: AA):
+    def __init__(self, arr, adapter: AA, parent: QTreeWidgetItem):
         super().__init__(arr)
         self.adapter = adapter
+        self.p = parent
+    
+    def remove(self):
+        self.p.addChildren(self.takeChildren())
+        self.p.removeChild(self)
 
-class TreeTab(QWidget):
+class TreeTab(QSplitter):
     def __init__(self, parent):
         super().__init__(parent)
-
-        button = QPushButton('Open File')
-        button.clicked.connect(self.open_menu)
+        self.setOrientation(Qt.Orientation.Horizontal)
 
         self.tree = QTreeWidget(self)
         self.tree.setColumnCount(2)
@@ -32,20 +46,14 @@ class TreeTab(QWidget):
         self.tab = QTabWidget(self)
         self.tab.tabBar().hide()
 
-        self.tabs = set()
-        
-        self.l = QHBoxLayout()
-        self.setLayout(self.l)
-
-        self.l.addWidget(button)
-        self.l.addWidget(self.tree)
-        self.l.addWidget(self.tab)
+        self.addWidget(self.tree)
+        self.addWidget(self.tab)
     
     def tree_item_clicked(self, item: TreeItem, _):
-        self.switch(item.adapter.get_widget())
+        self.switch(item)
 
-    def open_file(self, file_path: str, parent: AA):
-        print(f'requested {file_path} from {parent.get_basename()}')
+    def open_file(self, file_path: str):
+        self.mount(file_path, self.tree.currentItem())
 
     def open_menu(self):
         file_path, _ = QFileDialog.getOpenFileName(
@@ -53,30 +61,77 @@ class TreeTab(QWidget):
             filter="All (*.md *.html *.txt);; Rich Text (*.md *.html);; Markdown (*.md);; HTML (*.html);; Text (*.txt)"
         )
         if os.path.isfile(file_path):
-            from fileSwitchOpener import fileSwitchOpen
-            adapter = fileSwitchOpen(file_path, link_handle=self.open_file)
-            self.tabs.add(adapter.get_widget())
-            self.current_tab = adapter.get_widget()
-            self.mount(adapter)
+            self.mount(file_path)
+        else:
+            print('cancelled')
     
-    def switch(self, widget: QWidget):
-        index = self.tab.indexOf(widget)
-        self.tab.setCurrentIndex(index)
+    def mount(self, file_path: str, parentItem: QTreeWidgetItem=None):
+        if parentItem == None:
+            parentItem = self.tree.invisibleRootItem()
+        adapter = file_switch_open(file_path, link_handle=self.open_file)
+        self.tab.addTab(adapter.get_widget(), "test")
+        item = TreeItem(get_arr(file_path), adapter, parentItem)
+        parentItem.addChild(item)
+        self.switch(item)
+    
+    def switch(self, item: TreeItem):
+        self.tree.setCurrentItem(item)
+        self.tab.setCurrentIndex(self.tab.indexOf(item.adapter.get_widget()))
+    
+    def close_current(self):
+        item: TreeItem = self.tree.currentItem()
+        if item:
+            self.tab.removeTab(self.tab.indexOf(item.adapter.get_widget()))
+            item.remove()
 
-    def mount(self, adapter: AA):
-        file_name, ext = adapter.get_basename().split('.')
-        ext = ext.upper()
-        tree_item = TreeItem([file_name, ext], adapter)
-        self.tree.invisibleRootItem().addChild(tree_item)
-        new_widget = adapter.get_widget()
-        self.tab.addTab(new_widget, "test")
-        self.tabs.add(new_widget)
-        self.switch(new_widget)
+    def save(self):
+        item: TreeItem = self.tree.currentItem()
+        if item:
+            item.adapter.save()
+    
+    def save_as(self):
+        item: TreeItem = self.tree.currentItem()
+        if item:
+            file_path = item.adapter.save_as()
+            print(file_path)
+            if file_path:
+                f, e = get_arr(file_path)
+                item.setText(0, f)
+                item.setText(1, e)
+
+class Window(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        toolbar = QToolBar("Main Toolbar")
+        self.addToolBar(toolbar)
+
+        self.tab = TreeTab(self)
+        self.setCentralWidget(self.tab)
+
+        open_btn = QAction(text='Open', parent=self)
+        open_btn.triggered.connect(self.tab.open_menu)
+        toolbar.addAction(open_btn)
+
+        new_md = QAction(text='New Markdown', parent=self)
+        new_md.triggered.connect(lambda: self.tab.mount('.md'))
+        toolbar.addAction(new_md)
+
+        save_btn = QAction(text='Save', parent=self)
+        save_btn.triggered.connect(self.tab.save)
+        toolbar.addAction(save_btn)
+
+        save_as_btn = QAction(text='Save As', parent=self)
+        save_as_btn.triggered.connect(self.tab.save_as)
+        toolbar.addAction(save_as_btn)
+
+        close_btn = QAction(text='Close', parent=self)
+        close_btn.triggered.connect(self.tab.close_current)
+        toolbar.addAction(close_btn)
     
 if __name__ == "__main__":
     import widgetTester
 
     def create_tree_tab():
-        return TreeTab(None)
+        return Window()
     
     widgetTester.test('test tree tabs mounting', create_tree_tab)

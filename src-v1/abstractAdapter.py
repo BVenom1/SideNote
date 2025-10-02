@@ -3,10 +3,6 @@ from PySide6.QtWidgets import (
     QFileDialog
 )
 
-from PySide6.QtCore import (
-    QPersistentModelIndex
-)
-
 from abc import ABC, abstractmethod
 import os
 
@@ -14,8 +10,6 @@ class AbstractAdapter(ABC):
     def __init__(self, file_path: str = None):
         self.file_path = file_path
         self.open(self.file_path)
-        self.tree_index = None
-        self.tab_index = None
     
     def get_basename(self):
         return os.path.basename(self.file_path)
@@ -36,10 +30,6 @@ class AbstractAdapter(ABC):
     def get_filter(self) -> str:
         pass
 
-    def set_persistent_indices(self, tree_index: QPersistentModelIndex, tab_index: QPersistentModelIndex):
-        self.tree_index = tree_index
-        self.tab_index = tab_index
-
     def open(self, file_path: str):
         if os.path.isfile(file_path):
             self.file_path = file_path
@@ -50,16 +40,16 @@ class AbstractAdapter(ABC):
         if os.path.isfile(self.file_path):
             with open(self.file_path, 'w') as file:
                 file.write(self.get_value())
+        return self.file_path
 
     def save_as(self):
-        file_path, _ = QFileDialog.getSaveFileName(self.get_widget(), "Save As", self.get_filter())
-        if os.path.isfile(file_path):
+        file_path, _ = QFileDialog.getSaveFileName(self.get_widget(), "Save As", filter=self.get_filter())
+        with open(file_path, 'w') as file:
+            file.write(self.get_value())
             self.file_path = file_path
-            self.naive_save()
+            return file_path
+        return None
     
     def save(self):
-        if self.file_path != None:
-            self.naive_save()
-        else:
-            self.save_as()
+        return self.naive_save() if self.file_path else self.save_as()
 

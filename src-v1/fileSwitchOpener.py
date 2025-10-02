@@ -1,10 +1,10 @@
-from PySide6.QtWidgets import QWidget
 import os
 from abstractAdapter import AbstractAdapter
 
-def fileSwitchOpen(file_path: str, **kwargs) -> AbstractAdapter:
-    ext = os.path.splitext(file_path)[1]
-    print(f"opening {file_path}, ext: f{ext}")
+def file_switch_open(file_path: str, **kwargs) -> AbstractAdapter:
+    split = os.path.splitext(file_path)
+    ext = split[1] if split[1] != '' else split[0]
+    print(f"opening {file_path}, ext: {ext}")
     if ext == '.md':
         from markdownAdapter import MarkdownAdapter
         link_handle = kwargs['link_handle'] if 'link_handle' in kwargs else None

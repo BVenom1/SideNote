@@ -31,7 +31,7 @@ class MarkdownAdapter(AA):
             self.browser.scrollToAnchor(link.fragment())
         else:
             file_path = link.toString()
-            if self.link_handle: self.link_handle(file_path, self)
+            if self.link_handle: self.link_handle(file_path)
     
     def convert_to_markdown(self):
         self.browser.setMarkdown(self.text.toPlainText())
