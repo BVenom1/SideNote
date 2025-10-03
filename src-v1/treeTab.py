@@ -1,13 +1,8 @@
 from PySide6.QtWidgets import (
-    QWidget,
     QTreeWidget,
-    QHBoxLayout,
     QFileDialog,
     QTabWidget,
     QTreeWidgetItem,
-    QPushButton,
-    QMainWindow,
-    QToolBar,
     QSplitter,
 )
 import os
@@ -15,7 +10,6 @@ from abstractAdapter import AbstractAdapter as AA
 from fileSwitchOpener import file_switch_open
 
 from PySide6.QtCore import Qt
-from PySide6.QtGui import QAction
 
 def get_arr(file_path: str):
     file_name, ext = os.path.basename(file_path).split('.')
@@ -48,6 +42,11 @@ class TreeTab(QSplitter):
 
         self.addWidget(self.tree)
         self.addWidget(self.tab)
+
+    def toggle_file_browser_visible(self):
+        visible = not self.tree.isVisible()
+        self.tree.setVisible(visible)
+        return visible
     
     def tree_item_clicked(self, item: TreeItem, _):
         self.switch(item)
@@ -98,40 +97,3 @@ class TreeTab(QSplitter):
                 f, e = get_arr(file_path)
                 item.setText(0, f)
                 item.setText(1, e)
-
-class Window(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        toolbar = QToolBar("Main Toolbar")
-        self.addToolBar(toolbar)
-
-        self.tab = TreeTab(self)
-        self.setCentralWidget(self.tab)
-
-        open_btn = QAction(text='Open', parent=self)
-        open_btn.triggered.connect(self.tab.open_menu)
-        toolbar.addAction(open_btn)
-
-        new_md = QAction(text='New Markdown', parent=self)
-        new_md.triggered.connect(lambda: self.tab.mount('.md'))
-        toolbar.addAction(new_md)
-
-        save_btn = QAction(text='Save', parent=self)
-        save_btn.triggered.connect(self.tab.save)
-        toolbar.addAction(save_btn)
-
-        save_as_btn = QAction(text='Save As', parent=self)
-        save_as_btn.triggered.connect(self.tab.save_as)
-        toolbar.addAction(save_as_btn)
-
-        close_btn = QAction(text='Close', parent=self)
-        close_btn.triggered.connect(self.tab.close_current)
-        toolbar.addAction(close_btn)
-    
-if __name__ == "__main__":
-    import widgetTester
-
-    def create_tree_tab():
-        return Window()
-    
-    widgetTester.test('test tree tabs mounting', create_tree_tab)
