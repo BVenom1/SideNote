@@ -33,10 +33,9 @@ class TreeItem(QTreeWidgetItem):
         self.p.addChildren(self.takeChildren())
         self.p.removeChild(self)
 
-class TreeTab(QSplitter):
+class TreeTab(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setOrientation(Qt.Orientation.Horizontal)
 
         # Tree style file broser ----------------------------------------------
         self.tree = QTreeWidget(self)
@@ -81,19 +80,19 @@ class TreeTab(QSplitter):
         placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.tab.addTab(placeholder, 'placeholder')
 
-        # Adding Tab side content to a frame ----------------------------------
-        main_frame = QFrame(self)
+        # Layout --------------------------------------------------------------
         layout = QGridLayout()
-        main_frame.setLayout(layout)
+        self.setLayout(layout)
+
+        splitter = QSplitter(Qt.Orientation.Horizontal)
+        splitter.addWidget(self.tree)
+        splitter.addWidget(self.tab)
 
         layout.addWidget(self.collapse_btn, 0, 0)
         layout.addWidget(file_btn, 0, 1)
         layout.addWidget(self.file_name_label, 0, 2)
         layout.addWidget(close_btn, 0, 3)
-        layout.addWidget(self.tab, 1, 0, 1, 4)
-
-        self.addWidget(self.tree)
-        self.addWidget(main_frame)
+        layout.addWidget(splitter, 1, 0, 1, 4)
     
     def add_to_menu(self, name: str, menu: QMenu, trigger_func, shortcut: str=None):
         action = QAction(text=name, parent=self)

@@ -8,6 +8,9 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QUrl
 
 from abstractAdapter import AbstractAdapter as AA
+import os
+
+import re
 
 class MarkdownAdapter(AA):
     def __init__(self, file_path=None, link_handle=None):
@@ -37,6 +40,9 @@ class MarkdownAdapter(AA):
         self.browser.setMarkdown(self.text.toPlainText())
     
     def get_value(self):
+        for i in self.get_links():
+            print(i)
+            print(os.path.isfile(i))
         return self.text.toPlainText()
     
     def set_value(self, content):
@@ -47,6 +53,16 @@ class MarkdownAdapter(AA):
     
     def get_filter(self):
         return "Markdown (*.md)"
+    
+    def get_links(self):
+        i_list = re.findall(r"\[.*\]\(.*\)", self.text.toPlainText())
+        def process(l: str):
+            i = re.search(r'\(<.*>\)', l)
+            if i:
+                return i.group()[2:-2]
+            return re.search(r'\(.*\)', l).group()[1:-1]
+        f_list = map(process, i_list)
+        return f_list
 
 if __name__ == "__main__":
     

@@ -39,19 +39,18 @@ class AbstractAdapter(ABC):
             self.file_path = f'untitled{file_path}'
 
     def naive_save(self):
-        if os.path.isfile(self.file_path):
-            with open(self.file_path, 'w') as file:
-                file.write(self.get_value())
+        with open(self.file_path, 'w') as file:
+            file.write(self.get_value())
         return self.file_path
 
     def save_as(self):
         file_path, _ = QFileDialog.getSaveFileName(self.get_widget(), "Save As", filter=self.get_filter())
-        with open(file_path, 'w') as file:
-            file.write(self.get_value())
+        if file_path:
             self.file_path = file_path
-            return file_path
-        return None
+            return self.naive_save()
+        else:
+            return None
     
     def save(self):
-        return self.naive_save() if self.file_path else self.save_as()
+        return self.naive_save() if os.path.isfile(self.file_path) else self.save_as()
 
