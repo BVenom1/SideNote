@@ -112,12 +112,13 @@ class TreeTab(QSplitter):
         self.switch(item)
 
     def open_file(self, file_path: str):
+        print(f'requested {file_path}')
         self.mount(file_path, self.tree.currentItem())
 
     def open_menu(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open File",
-            filter="All (*.md *.html *.txt);; Rich Text (*.md *.html);; Markdown (*.md);; HTML (*.html);; Text (*.txt)"
+            filter="Rich Text (*.md);; Text (*.txt)"
         )
         if os.path.isfile(file_path):
             self.mount(file_path)
