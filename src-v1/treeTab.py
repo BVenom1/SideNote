@@ -117,7 +117,7 @@ class TreeTab(QFrame):
     def open_menu(self):
         file_path, _ = QFileDialog.getOpenFileName(
             self, "Open File",
-            filter="Rich Text (*.md);; Text (*.txt)"
+            filter="All(*.md *.txt);; Rich Text (*.md);; Text (*.txt)"
         )
         if os.path.isfile(file_path):
             self.mount(file_path)
@@ -152,7 +152,13 @@ class TreeTab(QFrame):
     def save(self):
         item: TreeItem = self.tree.currentItem()
         if item:
-            item.adapter.save()
+            file_path = item.adapter.save_as()
+            print(file_path)
+            if file_path:
+                f, e = get_arr(file_path)
+                item.setText(0, f)
+                item.setText(1, e)
+                self.file_name_label.setText(os.path.basename(file_path))
     
     def save_as(self):
         item: TreeItem = self.tree.currentItem()
@@ -163,6 +169,7 @@ class TreeTab(QFrame):
                 f, e = get_arr(file_path)
                 item.setText(0, f)
                 item.setText(1, e)
+                self.file_name_label.setText(os.path.basename(file_path))
 
 if __name__ == "__main__":
     import widgetTester
