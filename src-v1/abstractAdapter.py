@@ -35,6 +35,8 @@ class AbstractAdapter(ABC):
             self.file_path = file_path
             with open(file_path, 'r') as file:
                 self.set_value(file.read())
+        else:
+            self.file_path = f'untitled{file_path}'
 
     def naive_save(self):
         if os.path.isfile(self.file_path):
