@@ -111,7 +111,7 @@ class TreeTab(QFrame):
         self.switch(item)
 
     def open_file(self, file_path: str):
-        print(f'requested {file_path}')
+        # print(f'requested {file_path}')
         self.mount(file_path, self.tree.currentItem())
 
     def open_menu(self):

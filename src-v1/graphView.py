@@ -1,12 +1,10 @@
-from tinydb import TinyDB, Query
-import os
-import json
+from tinydb import TinyDB
+import os, json, random, string
 
 from PySide6.QtWidgets import (
     QFrame,
     QPushButton,
     QVBoxLayout,
-    QFileDialog,
 )
 from PySide6.QtCore import (
     QObject,
@@ -15,8 +13,8 @@ from PySide6.QtCore import (
 )
 
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWebEngineCore import QWebEnginePage
 from PySide6.QtWebChannel import QWebChannel
+
 
 db_src = 'D:/programming/Python/PySide6 markdown note/src-v1/data/test.json'
 
@@ -55,11 +53,11 @@ def add_data():
     # print(links.all())
 # add_data()
 
-class CallHandler(QObject):
+class DataHandler(QObject):
 
-    def __init__(self, sup):
-        super().__init__()
-        self.sup = sup
+    def __init__(self, parent: QWebEngineView=None):
+        super().__init__(parent)
+        self.p = parent
         self.db = TinyDB(db_src)
         self.nodes = self.db.table('nodes')
         self.links = self.db.table('links')
@@ -76,14 +74,21 @@ class CallHandler(QObject):
     def get_links(self):
         return json.dumps(self.links.all())
 
-
+    @Slot(str)
+    def ret_path(self, path):
+        print(f'Python: {path}')
+    
+    @Slot(str)
+    def call_js(self, func: str):
+        self.p.page().runJavaScript(func)
+    
 
 class WebView(QWebEngineView):
     def __init__(self):
         super().__init__()
 
         self.channel = QWebChannel()
-        self.handler = CallHandler(self)
+        self.handler = DataHandler(self)
         self.channel.registerObject('handler', self.handler)
         self.page().setWebChannel(self.channel)
 
@@ -103,11 +108,20 @@ class GraphView(QFrame):
         layout = QVBoxLayout()
         self.setLayout(layout)
 
-        # button = QPushButton("Open", self)
-        # layout.addWidget(button)
+        button = QPushButton("Add", self)
+        button.clicked.connect(self.add_)
+        layout.addWidget(button)
 
         self.web_view = WebView()
         layout.addWidget(self.web_view)
+
+    def add_(self):
+        self.web_view.handler.nodes.insert({
+            'name': 'testing.txt',
+            'type': 'TXT',
+            'path': f'{''.join(random.choice(string.ascii_letters) for i in range(30))}'
+        })
+        self.web_view.handler.call_js('get_data();')
 
 
 if __name__ == "__main__":

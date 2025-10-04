@@ -1,15 +1,21 @@
-const open_file_button = document.getElementById("open-file");
-new QWebChannel(qt.webChannelTransport, async function (channel) {
-	window.handler = channel.objects.handler;
+const width = 600;
+const height = 600;
 
+const svg = d3.select("svg").attr("width", width).attr("height", height);
+
+svg.append("g").attr("class", "links");
+svg.append("g").attr("class", "nodes");
+svg.append("g").attr("class", "text");
+
+let nodes = []
+let links = []
+
+async function get_data() {
 	let string = await handler.get_nodes();
-	const nodes = JSON.parse(string);
+	nodes = JSON.parse(string);
 
 	string = await handler.get_links();
-	const links = JSON.parse(string);
-
-	const width = 600;
-	const height = 600;
+	links = JSON.parse(string);
 
 	const simulation = d3
 		.forceSimulation(nodes)
@@ -18,36 +24,39 @@ new QWebChannel(qt.webChannelTransport, async function (channel) {
 			d3
 				.forceLink(links)
 				.id((d) => d.path)
-				.distance(80)
+				.distance(100)
 		)
-		.force("charge", d3.forceManyBody().strength(-400))
-		.force("center", d3.forceCenter(width / 2, height / 2));
+		.force("charge", d3.forceManyBody().strength(400))
+		.force("center", d3.forceCenter(width / 2, height / 2))
+		.force("collision", d3.forceCollide(40));
 
-	const svg = d3.select("svg").attr("width", width).attr("height", height);
-
-	const link = svg
-		.append("g")
-		.attr("class", "links")
+	const link = d3
+		.select("svg")
+		.select(".links")
 		.selectAll("line")
 		.data(links)
 		.enter()
 		.append("line")
 		.attr("style", "stroke:black;stroke-width:2");
 
-	const node = svg
-		.append("g")
-		.attr("class", "nodes")
+	link.exit().remove();
+
+	const node = d3
+		.select("svg")
+		.select(".nodes")
 		.selectAll("circle")
 		.data(nodes)
 		.enter()
 		.append("circle")
 		.attr("r", 10)
 		.attr("fill", "green")
-		.on("click", (_, d) => console.error(d.name));
+		.on("click", (_, d) => handler.ret_path(d.path));
+	
+	node.exit().remove();
 
-	const text = svg
-		.append("g")
-		.attr("class", "text")
+	const text = d3
+		.select("svg")
+		.select(".text")
 		.selectAll("text")
 		.data(nodes)
 		.enter()
@@ -56,8 +65,8 @@ new QWebChannel(qt.webChannelTransport, async function (channel) {
 		.attr("height", 50)
 		.attr("text-anchor", "middle")
 		.text((d) => d.name);
-
-	bbox = text.nodes().map((n) => n.getBBox());
+	
+	text.exit().remove();
 
 	simulation.on("tick", () => {
 		link.attr("x1", (d) => d.source.x)
@@ -89,4 +98,10 @@ new QWebChannel(qt.webChannelTransport, async function (channel) {
 			.on("end", dragended);
 	}
 	node.call(drag(simulation));
+}
+
+new QWebChannel(qt.webChannelTransport, async function (channel) {
+	window.handler = channel.objects.handler;
+
+	await get_data();
 });
