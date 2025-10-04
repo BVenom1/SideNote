@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
     QMenu,
 )
 import os
-from abstractAdapter import AbstractAdapter as AA
+from adapter.abstractAdapter import AbstractAdapter as AA
 from fileSwitchOpener import file_switch_open
 
 from PySide6.QtCore import Qt
@@ -172,7 +172,7 @@ class TreeTab(QFrame):
                 self.file_name_label.setText(os.path.basename(file_path))
 
 if __name__ == "__main__":
-    import widgetTester
+    from adapter import widgetTester
 
     def create_widget():
         return TreeTab()

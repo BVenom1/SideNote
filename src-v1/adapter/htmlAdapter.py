@@ -5,8 +5,6 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import (
     Qt,
     QUrl,
-    QObject,
-    Slot,
 )
 from PySide6.QtWebEngineWidgets import QWebEngineView
 from PySide6.QtWebEngineCore import QWebEnginePage
