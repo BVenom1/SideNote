@@ -29,8 +29,6 @@ class PdfAdapter(AA):
         bookmarks = QTreeView()
         bookmarks.setModel(self.bookmark_model)
 
-        # bookmarks.clicked.connect(self.navigate)
-
         self.frame.addWidget(bookmarks)
         self.frame.addWidget(pdf_view)
 

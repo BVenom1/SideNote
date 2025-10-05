@@ -1,2 +1,6 @@
 content/
 test/
+build/
+dist/
+
+*.spec
