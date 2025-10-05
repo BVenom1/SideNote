@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 import os
 from adapter.abstractAdapter import AbstractAdapter as AA
-from v1.fileHandler import FileHandler
+from fileHandler import FileHandler
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QAction
@@ -74,6 +74,7 @@ class TreeTab(QFrame):
 
         # Tab which displays the file contents --------------------------------
         self.tab = QTabWidget(self)
+        self.tab.setStyleSheet("QTabWidget::pane { padding: 0px; }")
         self.tab.tabBar().hide()
 
         placeholder = QLabel('Open a file or create a New one')
