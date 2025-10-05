@@ -60,8 +60,8 @@ class TreeTab(QFrame):
         file_btn.setStyleSheet("QPushButton::menu-indicator { image: none; width: 0; }")
 
         self.add_to_menu('Open', file_menu, self.open_menu, 'Ctrl+O')
-        self.add_to_menu('New Markdown', file_menu, lambda: self.open_file('.md'), 'Ctrl+M')
-        self.add_to_menu('New Text', file_menu, lambda: self.open_file('.txt'), 'Ctrl+T')
+        self.add_to_menu('New Markdown', file_menu, lambda: self.new_file('.md'), 'Ctrl+M')
+        self.add_to_menu('New Text', file_menu, lambda: self.new_file('.txt'), 'Ctrl+T')
         self.add_to_menu('Save', file_menu, self.save, 'Ctrl+S')
         self.add_to_menu('Save As', file_menu, self.save_as, 'Ctrl+A')
 
@@ -110,6 +110,10 @@ class TreeTab(QFrame):
     
     def tree_item_clicked(self, item: TreeItem, _):
         self.switch(item)
+        
+    def new_file(self, file_type: str):
+        adapter = self.file_handle.open(file_type, link_handle=self.open_file)
+        self.mount(adapter)
 
     def open_file(self, file_path: str):
         adapter = self.file_handle.open(file_path, link_handle=self.open_file)

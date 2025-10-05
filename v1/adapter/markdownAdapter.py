@@ -81,7 +81,10 @@ class MarkdownAdapter(AA):
             if self.link_handle: self.link_handle(file_path)
     
     def convert_to_markdown(self):
+        vsb = self.browser.verticalScrollBar()
+        old_pos_ratio = vsb.value()
         self.browser.setMarkdown(self.text.toPlainText())
+        vsb.setValue(old_pos_ratio)
     
     def get_links(self):
         i_list = re.findall(r"\[.*\]\(.*\)", self.text.toPlainText())
@@ -95,9 +98,6 @@ class MarkdownAdapter(AA):
     
 # Implementations of abstract methods in AbstractAdapter ----------------------
     def get_value(self):
-        for i in self.get_links():
-            print(i)
-            print(os.path.isfile(i))
         return self.text.toPlainText()
     
     def set_value(self, content):

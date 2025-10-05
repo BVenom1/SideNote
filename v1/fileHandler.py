@@ -10,7 +10,7 @@ class FileHandler():
         content = ''
         if os.path.isfile(file_path):
             self.file_path = file_path
-            with open(file_path, 'r') as file:
+            with open(file_path, 'r', encoding="utf8") as file:
                 content = file.read()
         else:
             file_path = f'untitled{file_path}'
@@ -35,7 +35,7 @@ class FileHandler():
             return None
         
     def naive_save(self, adapter: AbstractAdapter) -> str:
-        with open(adapter.get_file_path(), 'w') as file:
+        with open(adapter.get_file_path(), 'w', encoding="utf8") as file:
             file.write(adapter.get_value())
         return adapter.file_path
     
