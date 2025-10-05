@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import (
     QTreeWidget,
-    QFileDialog,
     QTabWidget,
     QTreeWidgetItem,
     QSplitter,
@@ -12,7 +11,7 @@ from PySide6.QtWidgets import (
 )
 import os
 from adapter.abstractAdapter import AbstractAdapter as AA
-from fileSwitchOpener import file_switch_open, FileHandler
+from v1.fileHandler import FileHandler
 
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QIcon, QAction
@@ -61,8 +60,8 @@ class TreeTab(QFrame):
         file_btn.setStyleSheet("QPushButton::menu-indicator { image: none; width: 0; }")
 
         self.add_to_menu('Open', file_menu, self.open_menu, 'Ctrl+O')
-        self.add_to_menu('New Markdown', file_menu, lambda: self.mount('.md'), 'Ctrl+M')
-        self.add_to_menu('New Text', file_menu, lambda: self.mount('.txt'), 'Ctrl+T')
+        self.add_to_menu('New Markdown', file_menu, lambda: self.open_file('.md'), 'Ctrl+M')
+        self.add_to_menu('New Text', file_menu, lambda: self.open_file('.txt'), 'Ctrl+T')
         self.add_to_menu('Save', file_menu, self.save, 'Ctrl+S')
         self.add_to_menu('Save As', file_menu, self.save_as, 'Ctrl+A')
 
@@ -112,25 +111,18 @@ class TreeTab(QFrame):
         self.switch(item)
 
     def open_file(self, file_path: str):
-        # print(f'requested {file_path}')
-        self.mount(file_path, self.tree.currentItem())
+        adapter = self.file_handle.open(file_path, link_handle=self.open_file)
+        self.mount(adapter, self.tree.currentItem())
 
     def open_menu(self):
-        file_path, _ = QFileDialog.getOpenFileName(
-            self, "Open File",
-            filter="All(*.md *.txt);; Rich Text (*.md);; Text (*.txt)"
-        )
-        if os.path.isfile(file_path):
-            self.mount(file_path)
-        else:
-            print('cancelled')
+        adapter = self.file_handle.open_dialog(self, link_handle=self.open_file)
+        if adapter: self.mount(adapter)
     
-    def mount(self, file_path: str, parentItem: QTreeWidgetItem=None):
+    def mount(self, adapter: AA, parentItem: QTreeWidgetItem=None):
         if parentItem == None:
             parentItem = self.tree.invisibleRootItem()
-        adapter = self.file_handle.open(file_path, link_handle=self.open_file)
         self.tab.addTab(adapter.get_widget(), "test")
-        item = TreeItem(get_arr(file_path), adapter, parentItem)
+        item = TreeItem(get_arr(adapter.get_file_path()), adapter, parentItem)
         parentItem.addChild(item)
         self.switch(item)
     

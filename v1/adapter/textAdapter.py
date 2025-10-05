@@ -1,7 +1,6 @@
 from adapter.abstractAdapter import AbstractAdapter as AA
 
 from PySide6.QtWidgets import (
-    QTabWidget,
     QTextEdit
 )
 

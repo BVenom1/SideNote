@@ -1,6 +1,5 @@
 from PySide6.QtWidgets import (
     QWidget,
-    QFileDialog
 )
 
 from abc import ABC, abstractmethod
@@ -36,28 +35,4 @@ class AbstractAdapter(ABC):
     @abstractmethod
     def get_filter(self) -> str:
         pass
-
-    # def open(self, file_path: str):
-    #     if os.path.isfile(file_path):
-    #         self.file_path = file_path
-    #         with open(file_path, 'r') as file:
-    #             self.set_value(file.read())
-    #     else:
-    #         self.file_path = f'untitled{file_path}'
-
-    # def naive_save(self):
-    #     with open(self.file_path, 'w') as file:
-    #         file.write(self.get_value())
-    #     return self.file_path
-
-    # def save_as(self):
-    #     file_path, _ = QFileDialog.getSaveFileName(self.get_widget(), "Save As", filter=self.get_filter())
-    #     if file_path:
-    #         self.file_path = file_path
-    #         return self.naive_save()
-    #     else:
-    #         return None
-    
-    # def save(self):
-    #     return self.naive_save() if os.path.isfile(self.file_path) else self.save_as()
 
